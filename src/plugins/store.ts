@@ -9,7 +9,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
-        socket: null as Socket,
+        socket: null as null | Socket,
         url: 'ws://localhost:5000',
         errorShown: false,
     },
@@ -26,7 +26,7 @@ export default new Vuex.Store({
                 if (state.socket === null) return;
                 state.socket.on('connect', () => {
                     console.log("CONNECTED");
-                    state.socket.emit('hello', 'world')
+                    state.socket?.emit('hello', 'world')
                     resolve();
                 });
                 state.socket.on('connect_error', (e: any) => {
