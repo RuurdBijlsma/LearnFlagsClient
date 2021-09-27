@@ -12,5 +12,8 @@ import Vue from 'vue';
 export default Vue.extend({
     name: 'App',
     data: () => ({}),
+    async mounted() {
+        await this.$store.dispatch('initializeSocket');
+    },
 });
 </script>
