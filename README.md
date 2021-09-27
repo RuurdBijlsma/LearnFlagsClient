@@ -1,6 +1,6 @@
-# Learn Flags Client
+# Learning Flags Client
 
-Server located at https://github.com/ruurdbijlsma/LearnFlagsServer
+Server located at https://github.com/ruurdbijlsma/LearningFlagsServer
 
 ## Project setup
 ```
