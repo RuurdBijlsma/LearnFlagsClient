@@ -120,11 +120,11 @@ export default Vue.extend({
                 randomFlags.push(url)
         }
         this.randomFlags = randomFlags;
+        console.log(randomFlags);
         document.addEventListener('keypress', this.handleKey, false);
     },
     methods: {
         handleKey(e: KeyboardEvent) {
-            console.log(e.key);
             if (this.game.showFeedback && e.key === 'Enter') {
                 this.nextFact();
             }
@@ -144,8 +144,13 @@ export default Vue.extend({
         async newGame() {
             this.resetGame();
             this.loading.connection = true;
-            await this.$store.dispatch('initializeSocket');
-            this.loading.connection = false;
+            try {
+                await this.$store.dispatch('initializeSocket');
+            } catch (e) {
+                return;
+            } finally {
+                this.loading.connection = false;
+            }
             if (!this.connected)
                 return;
             this.game.started = true;
@@ -192,7 +197,7 @@ export default Vue.extend({
             userInput.focus();
         },
         flagUrl(countryCode: string) {
-            return `flags/svg/${countryCode}.svg`
+            return `flags/svg/${countryCode.toLowerCase()}.svg`
         },
         randomFlag() {
             return this.flagList[Math.floor(Math.random() * this.flagList.length)];
