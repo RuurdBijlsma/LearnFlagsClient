@@ -63,7 +63,7 @@
                     <span>{{ toHms(game.timeLeft) }}</span>
                     <span>{{ toHms(game.duration) }}</span>
                 </div>
-                <p>{{ game.encounteredFlags.size }} / {{ $store.getters.flagList.length }} flags encountered</p>
+                <p>{{ game.encounteredFlags.size }} / {{ $store.state.factCount }} flags encountered</p>
                 <p>{{ Math.round(correctPercentage * 100) }}% correct</p>
             </v-card-text>
             <v-card-actions>

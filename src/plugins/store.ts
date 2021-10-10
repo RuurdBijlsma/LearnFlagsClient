@@ -31,12 +31,14 @@ export default new Vuex.Store({
         countries: [] as { [key: string]: string }[],
         gameResult: null as null | {
             duration: number,
-            history: {accuracy:number, correct: boolean, countryCode: string, userAnswer: string, responseTime: number }[],
+            history: { accuracy: number, correct: boolean, countryCode: string, userAnswer: string, responseTime: number }[],
             encounteredFlags: Set<string>,
         },
         randomFlags: [] as string[],
+        factCount: 1,
     },
     mutations: {
+        factCount: (state, factCount) => state.factCount = factCount,
         randomFlags: (state, randomFlags) => state.randomFlags = randomFlags,
         gameResult: (state, gameResult) => state.gameResult = gameResult,
         countries: (state, countries) => state.countries = countries,
@@ -66,6 +68,11 @@ export default new Vuex.Store({
                     randomFlags.push(url)
             }
             commit('randomFlags', randomFlags);
+        },
+        async getStats({state}) {
+            return new Promise<void>((resolve) => {
+                state.socket?.emit('get_stats', resolve);
+            });
         },
         async answerFact({state}, {countryCode = '', answer = '', responseTime = 0}) {
             return new Promise<void>((resolve) => {
@@ -100,6 +107,7 @@ export default new Vuex.Store({
                         reject(e);
                     }
                 });
+                state.socket.on('fact_count', l => commit('factCount', l));
             })
         },
     },

@@ -54,10 +54,19 @@ export default Vue.extend({
             connection: false,
         },
     }),
+    beforeDestroy() {
+        document.removeEventListener('keypress', this.handleKey);
+    },
     async mounted() {
         await this.$store.dispatch('initRandomFlags');
+        document.addEventListener('keypress', this.handleKey, false);
     },
     methods: {
+        handleKey(e: KeyboardEvent) {
+            if (e.key === 'Enter') {
+                this.newGame();
+            }
+        },
         async newGame() {
             this.loading.connection = true;
             try {

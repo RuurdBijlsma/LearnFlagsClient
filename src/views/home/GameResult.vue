@@ -10,19 +10,24 @@
             </div>
             <v-card-text class="results">
                 <h3>Answer accuracy over time</h3>
-                <v-sparkline
-                    :value="accuracyHistory"
-                    :gradient="lineConfig.gradient"
-                    :smooth="lineConfig.radius || false"
-                    :padding="lineConfig.padding"
-                    :line-width="lineConfig.width"
-                    :stroke-linecap="lineConfig.lineCap"
-                    :gradient-direction="lineConfig.gradientDirection"
-                    :fill="lineConfig.fill"
-                    :type="lineConfig.type"
-                    :auto-line-width="lineConfig.autoLineWidth"
-                    auto-draw
-                ></v-sparkline>
+                <div class="sparkline">
+                    <div class="min-max">
+                        <span>{{ Math.round(maxAccuracy*100) }}%</span>
+                        <span>{{ Math.round(minAccuracy*100) }}%</span>
+                    </div>
+                    <v-sparkline
+                        :value="accuracyHistory"
+                        :gradient="lineConfig.gradient"
+                        :smooth="lineConfig.radius || false"
+                        :padding="lineConfig.padding"
+                        :line-width="lineConfig.width"
+                        :stroke-linecap="lineConfig.lineCap"
+                        :gradient-direction="lineConfig.gradientDirection"
+                        :fill="lineConfig.fill"
+                        :type="lineConfig.type"
+                        :auto-line-width="lineConfig.autoLineWidth"
+                        auto-draw/>
+                </div>
             </v-card-text>
             <v-card-actions>
                 <v-btn rounded color="primary" to="/">
@@ -62,17 +67,27 @@ export default Vue.extend({
         },
     }),
     async mounted() {
-        await this.$store.dispatch('initRandomFlags');
         console.log(this.result);
         if (!this.result) {
             console.warn("No known game result, redirecting to homepage");
             return await this.$router.push('/');
         }
+        let [, stats] = await Promise.all([
+            this.$store.dispatch('initRandomFlags'),
+            this.$store.dispatch('getStats')
+        ]);
+        console.log({stats});
     },
     methods: {},
     computed: {
         accuracyHistory(): number[] {
             return this.result?.history.map((h: any) => h.accuracy) ?? [];
+        },
+        minAccuracy(): number {
+            return Math.min(...this.accuracyHistory);
+        },
+        maxAccuracy(): number {
+            return Math.max(...this.accuracyHistory);
         },
         result(): null | {
             duration: number,
@@ -118,4 +133,15 @@ export default Vue.extend({
 .flags > * {
     width: 10px;
 }
+
+.sparkline {
+    display: flex;
+}
+
+.min-max {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
 </style>
