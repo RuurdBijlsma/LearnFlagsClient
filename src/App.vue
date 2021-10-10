@@ -15,12 +15,12 @@
             <router-view/>
         </v-main>
 
-        <v-bottom-navigation color="primary" v-if="$vuetify.breakpoint.mobile" grow>
-            <v-btn to="/" exact>
+        <v-bottom-navigation app color="primary" v-if="$vuetify.breakpoint.mobile" shift grow>
+            <v-btn to="/" exact :style="{height: 'inherit !important'}">
                 <span>Home</span>
                 <v-icon>mdi-home</v-icon>
             </v-btn>
-            <v-btn to="/settings" exact>
+            <v-btn to="/settings" exact :style="{height: 'inherit !important'}">
                 <span>Settings</span>
                 <v-icon>mdi-cog</v-icon>
             </v-btn>
