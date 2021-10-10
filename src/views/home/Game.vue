@@ -57,6 +57,30 @@
                 <div class="flags">
                     <v-img :key="flag" v-for="flag in randomFlags" :aspect-ratio="3/2" :src="flag"/>
                 </div>
+                <div class="slider-container">
+                    <v-toolbar flat dense>
+                        <v-toolbar-title>
+                            <span class="subheading">Session duration</span>
+                        </v-toolbar-title>
+                    </v-toolbar>
+
+                    <v-col class="text-left">
+                        <span class="text-h2 font-weight-light" v-text="sessionDuration"></span>
+                        <span class="subheading font-weight-light mr-1">minutes</span>
+                    </v-col>
+                    <div class="slider">
+                        <span>5 min</span>
+                        <v-slider step="5"
+                                  hide-details
+                                  ticks="always"
+                                  tick-size="4"
+                                  prepend-icon="mdi-clock-outline"
+                                  min="5" max="60"
+                                  v-model="sessionDuration">
+                        </v-slider>
+                        <span>60 min</span>
+                    </div>
+                </div>
                 <v-card-actions>
                     <v-btn rounded color="primary"
                            :loading="loading.connection"
@@ -73,7 +97,11 @@
                 :class="$vuetify.breakpoint.width > 1300 ? 'rounded-xl' : ''">
             <v-card-title>Session progress</v-card-title>
             <v-card-text>
-                <v-progress-linear class="mb-4" :value="50"/>
+                <v-progress-linear :value="100 - game.timeLeft / game.duration * 100"/>
+                <div class="time-container mb-4">
+                    <span>{{ toHms(game.timeLeft) }}</span>
+                    <span>{{ toHms(game.duration) }}</span>
+                </div>
                 <p>{{ game.encounteredFlags.size }} / {{ flagList.length }} flags encountered</p>
                 <p>{{ Math.round(correctPercentage * 100) }}% correct</p>
             </v-card-text>
@@ -90,6 +118,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import {secondsToHms} from "@/ts/utils";
 
 export default Vue.extend({
     name: 'Home',
@@ -102,6 +131,8 @@ export default Vue.extend({
         },
         countries: null as null | { [key: string]: string },
         game: {
+            duration: 0,
+            timeLeft: 1,
             started: false,
             fact: null as null | { fact_id: string, answer: string, question: string },
             userAnswer: '',
@@ -112,8 +143,10 @@ export default Vue.extend({
             encounteredFlags: new Set(),
         },
         randomFlags: [] as string[],
+        timerInterval: -1,
     }),
     beforeDestroy() {
+        clearInterval(this.timerInterval);
         document.removeEventListener('keypress', this.handleKey);
     },
     async mounted() {
@@ -136,7 +169,10 @@ export default Vue.extend({
             }
         },
         resetGame() {
+            clearInterval(this.timerInterval);
             this.game = {
+                duration: this.sessionDuration * 60,
+                timeLeft: this.sessionDuration * 60,
                 started: false,
                 fact: null,
                 userAnswer: '',
@@ -161,9 +197,15 @@ export default Vue.extend({
                 return;
             this.game.started = true;
             await this.nextFact();
+            this.timerInterval = setInterval(() => {
+                this.game.timeLeft--;
+                if (this.game.timeLeft === 0) {
+                    this.stopGame();
+                }
+            }, 1000);
         },
         async stopGame() {
-            this.resetGame();
+            clearInterval(this.timerInterval);
         },
         async answerFact() {
             this.loading.answer = true;
@@ -211,8 +253,19 @@ export default Vue.extend({
         randomFlagUrl() {
             return this.flagUrl(this.randomFlag());
         },
+        toHms(s: number) {
+            return secondsToHms(s);
+        },
     },
     computed: {
+        sessionDuration: {
+            set(v: number) {
+                this.$store.commit('sessionDuration', v);
+            },
+            get(): number {
+                return this.$store.state.sessionDuration;
+            }
+        },
         connected() {
             return this.$store.state.connected;
         },
@@ -250,7 +303,7 @@ export default Vue.extend({
 
 .left-card {
     flex-grow: 1;
-    box-shadow: 0 5px 20px 0 rgba(0, 0, 0, 0.1) !important;
+    /*box-shadow: 0 5px 20px 0 rgba(0, 0, 0, 0.1) !important;*/
 }
 
 .flags {
@@ -261,6 +314,16 @@ export default Vue.extend({
     width: 10px;
 }
 
+.slider-container {
+    padding: 20px;
+}
+
+.slider {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
 .feedback {
     text-align: center;
 }
@@ -268,6 +331,13 @@ export default Vue.extend({
 .right-card {
     margin-left: 30px;
     width: 300px;
-    box-shadow: 0 5px 20px 0 rgba(0, 0, 0, 0.1) !important;
+    /*box-shadow: 0 5px 20px 0 rgba(0, 0, 0, 0.1) !important;*/
+}
+
+.time-container {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: bolder;
 }
 </style>

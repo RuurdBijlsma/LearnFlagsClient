@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import {io, Socket} from "socket.io-client";
 import Swal from "sweetalert2";
+import VuexPersistence from "vuex-persist";
 
 if (document.querySelectorAll(`head link[rel='manifest']`).length === 0) {
     let manifestLink = document.createElement('link');
@@ -9,6 +10,13 @@ if (document.querySelectorAll(`head link[rel='manifest']`).length === 0) {
     manifestLink.setAttribute('href', './manifest.json');
     document.querySelector('head')?.appendChild?.(manifestLink);
 }
+
+const vuexLocal = new VuexPersistence({
+    reducer: (state: any) => ({
+        sessionDuration: state.sessionDuration,
+    }),
+    storage: window.localStorage,
+})
 
 Vue.use(Vuex)
 
@@ -18,8 +26,11 @@ export default new Vuex.Store({
         url: 'ws://localhost:5000',
         errorShown: false,
         connected: false,
+        sessionDuration: 10,
     },
     mutations: {
+        socketUrl: (state, socketUrl) => state.url = socketUrl,
+        sessionDuration: (state, sessionDuration) => state.sessionDuration = sessionDuration,
         socket: (state, socket) => state.socket = socket,
         url: (state, url) => state.url = url,
         errorShown: (state, errorShown) => state.errorShown = errorShown,
@@ -62,5 +73,6 @@ export default new Vuex.Store({
             })
         },
     },
-    modules: {}
+    modules: {},
+    plugins: [vuexLocal.plugin],
 })
