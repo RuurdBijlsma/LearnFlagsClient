@@ -12,13 +12,25 @@ export default new Vuex.Store({
         socket: null as null | Socket,
         url: 'ws://localhost:5000',
         errorShown: false,
+        connected: false,
     },
     mutations: {
         socket: (state, socket) => state.socket = socket,
         url: (state, url) => state.url = url,
         errorShown: (state, errorShown) => state.errorShown = errorShown,
+        connected: (state, value) => state.connected = value,
     },
     actions: {
+        async answerFact({state}, {countryCode = '', answer = '', responseTime = 0}) {
+            return new Promise<void>((resolve) => {
+                state.socket?.emit('register_response', countryCode, answer, responseTime, resolve);
+            });
+        },
+        async nextFact({state}) {
+            return new Promise<void>((resolve) => {
+                state.socket?.emit('next_fact', '', resolve);
+            });
+        },
         async initializeSocket({commit, state}) {
             console.log("Called initializeSocket")
             commit('socket', io(state.url));
@@ -26,12 +38,13 @@ export default new Vuex.Store({
                 if (state.socket === null) return;
                 state.socket.on('connect', () => {
                     console.log("CONNECTED");
-                    state.socket?.emit('hello', 'world')
+                    commit('connected', true);
                     resolve();
                 });
                 state.socket.on('connect_error', (e: any) => {
                     console.warn(e.message);
                     if (!state.errorShown) {
+                        commit('connected', false);
                         commit('errorShown', true);
                         Swal.fire({
                             title: `Can't connect to server, run the server before loading this page.`,
