@@ -98,7 +98,7 @@ export default Vue.extend({
             factShownTimestamp: 0,
             correctAnswer: false,
             showFeedback: false,
-            answerHistory: [] as { accuracy: number, correct: boolean, countryCode: string, userAnswer: string, responseTime: number }[],
+            answerHistory: [] as { rollingAccuracy: number, accuracy: number, correct: boolean, countryCode: string, userAnswer: string, responseTime: number }[],
             encounteredFlags: new Set() as Set<string>,
         },
         randomFlags: [] as string[],
@@ -170,8 +170,12 @@ export default Vue.extend({
             let correctHistory = [...this.game.answerHistory.map(a => a.correct), correct];
             let correctCount = correctHistory.reduce((a, b) => a + (b ? 1 : 0), 0) as number;
             let correctPercentage = correctCount / correctHistory.length;
+            let rollSize = 5;
+            let rollCorrectCount = correctHistory.slice(-rollSize).reduce((a, b) => a + (b ? 1 : 0), 0) as number;
+            let rollingAccuracy = rollCorrectCount / rollSize;
             // add to history
             this.game.answerHistory.push({
+                rollingAccuracy,
                 accuracy: correctPercentage,
                 countryCode: this.game.fact?.question ?? '',
                 correct,

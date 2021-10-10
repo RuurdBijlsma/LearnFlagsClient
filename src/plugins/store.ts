@@ -32,7 +32,7 @@ export default new Vuex.Store({
         countries: [] as { [key: string]: string }[],
         gameResult: null as null | {
             duration: number,
-            history: { accuracy: number, correct: boolean, countryCode: string, userAnswer: string, responseTime: number }[],
+            history: { rollingAccuracy: number, accuracy: number, correct: boolean, countryCode: string, userAnswer: string, responseTime: number }[],
             encounteredFlags: Set<string>,
         },
         randomFlags: [] as string[],

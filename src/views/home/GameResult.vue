@@ -19,16 +19,16 @@
                     Flags encountered: <b>{{ result.encounteredFlags.size }}</b>
                     <v-divider class="mb-3 mt-3"/>
                 </div>
-                <h3 class="mb-4">Answer accuracy over time</h3>
+                <h3 class="mb-4">Rolling average accuracy over time</h3>
                 <v-divider class="mb-3 mt-3"/>
                 <div class="sparkline mt-4">
                     <div class="min-max">
-                        <span>{{ Math.round(maxAccuracy * 100) }}%</span>
-                        <span>{{ Math.round(minAccuracy * 100) }}%</span>
+                        <span>{{ Math.round(maxRollingAccuracy * 100) }}%</span>
+                        <span>{{ Math.round(minRollingAccuracy * 100) }}%</span>
                     </div>
                     <v-divider class="ml-2" vertical/>
                     <v-sparkline
-                        :value="accuracyHistory"
+                        :value="rollingAccuracyHistory"
                         :gradient="lineConfig.gradient"
                         :smooth="lineConfig.radius || false"
                         :padding="lineConfig.padding"
@@ -49,8 +49,13 @@
                            class="item-img"
                            :src="$store.getters.flagUrl(fact.key)"
                            gradient="to top right, rgba(50,62,100,.5), rgba(25,32,72,0)">
-                        <div class="item-text">{{ countries[fact.key] }}</div>
-                        <div class="item-text2">{{ Math.round(fact.activation * 10) / 10 }}</div>
+                        <div class="item-text">
+                            {{ countries[fact.key] }}
+                            <br>
+                            Activation: {{ Math.round(fact.activation * 100) }}
+                            <br>
+                            Accuracy: {{ Math.round(fact.accuracy * 100) }}%
+                        </div>
                     </v-img>
                 </div>
             </v-card-text>
@@ -91,7 +96,7 @@ export default Vue.extend({
             type: 'trend',
             autoLineWidth: false,
         },
-        factActivations: null as null | { key: string, activation: number, rof: number }[],
+        factActivations: null as null | { key: string, activation: number, rof: number, accuracy: number }[],
     }),
     async mounted() {
         console.log(this.result);
@@ -103,7 +108,22 @@ export default Vue.extend({
             this.$store.dispatch('initRandomFlags'),
             this.$store.dispatch('getStats')
         ]);
-        //
+        let accuracyPerFlag = {} as any;
+        for (let encounter of this.result.history) {
+            if (!accuracyPerFlag.hasOwnProperty(encounter.countryCode)) {
+                accuracyPerFlag[encounter.countryCode] = {
+                    correct: encounter.correct ? 1 : 0,
+                    incorrect: encounter.correct ? 0 : 1,
+                };
+            } else {
+                if (encounter.correct) {
+                    accuracyPerFlag[encounter.countryCode].correct++;
+                } else {
+                    accuracyPerFlag[encounter.countryCode].incorrect++;
+                }
+            }
+        }
+        console.log('accuracy per flag', accuracyPerFlag);
         this.factActivations = Object.entries(stats).map(([key, values]) => {
             let [a, rof] = values as (string | number)[];
             let activation;
@@ -114,8 +134,12 @@ export default Vue.extend({
             else
                 activation = +a;
 
-            return {key, activation, rof: +rof};
-        }).filter(i => i.activation !== -Infinity).sort((a, b) => b.activation - a.activation);
+            let apf = accuracyPerFlag[key];
+            let accuracy = apf ? apf.correct / (apf.correct + apf.incorrect) : -1;
+            return {key, activation, rof: +rof, accuracy};
+        }).filter(i => i.activation !== -Infinity)
+            .sort((a, b) => b.activation - a.activation)
+            .sort((a, b) => b.accuracy - a.accuracy)
         console.log(this.factActivations);
     },
     methods: {
@@ -124,14 +148,17 @@ export default Vue.extend({
         },
     },
     computed: {
+        rollingAccuracyHistory(): number[] {
+            return this.result?.history.map((h: any) => h.rollingAccuracy) ?? [];
+        },
         accuracyHistory(): number[] {
             return this.result?.history.map((h: any) => h.accuracy) ?? [];
         },
-        minAccuracy(): number {
-            return Math.min(...this.accuracyHistory);
+        minRollingAccuracy(): number {
+            return Math.min(...this.rollingAccuracyHistory);
         },
-        maxAccuracy(): number {
-            return Math.max(...this.accuracyHistory);
+        maxRollingAccuracy(): number {
+            return Math.max(...this.rollingAccuracyHistory);
         },
         result(): null | {
             duration: number,
@@ -198,19 +225,15 @@ export default Vue.extend({
     border-radius: 10px;
 }
 
-.item-text, .item-text2 {
+.item-text {
     position: absolute;
-    bottom: 30px;
+    bottom: 10px;
     width: 100%;
     text-align: center;
     color: white;
     font-weight: bolder;
     font-size: 14px;
     text-shadow: 0 0 15px black;
-}
-
-.item-text2 {
-    bottom: 10px;
 }
 
 .sparkline {
