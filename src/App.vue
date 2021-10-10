@@ -5,6 +5,10 @@
                 <v-app-bar-title v-if="$vuetify.breakpoint.width > 500" class="app-bar-text">
                     Learning Flags
                 </v-app-bar-title>
+                <div class="links">
+                    <v-btn plain to="/" exact>Home</v-btn>
+                    <v-btn plain to="/settings" exact>Settings</v-btn>
+                </div>
             </div>
         </v-app-bar>
         <v-main>
@@ -51,9 +55,29 @@ html, body {
     width: 100%;
     max-width: 1300px;
     margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .app-bar-text {
     width: 250px !important;
+}
+
+
+a[no-style] {
+    text-decoration: none;
+    color: inherit !important;
+}
+
+a[no-style]:hover {
+    text-decoration: underline;
+}
+
+.links {
+    display: flex;
+    width: 100%;
+    max-width: 200px;
+    justify-content: space-between;
 }
 </style>

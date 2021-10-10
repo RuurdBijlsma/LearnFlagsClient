@@ -1,5 +1,8 @@
 <template>
-    <div class="home">
+    <div class="home" :style="{
+        flexDirection: $vuetify.breakpoint.mobile ? 'column' : 'row',
+        alignItems:  $vuetify.breakpoint.mobile ? 'stretch' : 'flex-start',
+    }">
         <v-card elevation="2" class="left-card"
                 :class="$vuetify.breakpoint.width > 1300 ? 'rounded-xl' : ''">
             <template v-if="game.started">
@@ -34,12 +37,12 @@
                     </div>
                 </v-card-text>
                 <v-card-actions>
-                    <v-spacer></v-spacer>
+                    <v-spacer/>
                     <v-btn rounded color="primary"
                            :loading="loading.answer"
                            v-if="!game.showFeedback"
                            @click="answerFact">
-                        <span class="ml-4 mr-4" v-if="game.userAnswer !== ''">Next fact</span>
+                        <span class="ml-4 mr-4" v-if="game.userAnswer !== ''">Submit answer</span>
                         <span class="ml-4 mr-4" v-else>I don't know</span>
                     </v-btn>
                     <v-btn v-else rounded color="primary"
@@ -52,7 +55,7 @@
             <template v-else>
                 <v-card-title>Learn country flags!</v-card-title>
                 <div class="flags">
-                    <v-img :key="flag" v-for="flag in randomFlags" aspect-ratio="2/3" :src="flag"/>
+                    <v-img :key="flag" v-for="flag in randomFlags" :aspect-ratio="3/2" :src="flag"/>
                 </div>
                 <v-card-actions>
                     <v-btn rounded color="primary"
@@ -63,7 +66,10 @@
                 </v-card-actions>
             </template>
         </v-card>
-        <v-card elevation="2" class="right-card" v-if="game.started"
+        <v-card :style="{
+            marginLeft: $vuetify.breakpoint.mobile ? '0' : '30px',
+            width: $vuetify.breakpoint.mobile ? '100%' : '300px',
+        }" elevation="2" class="right-card" v-if="game.started"
                 :class="$vuetify.breakpoint.width > 1300 ? 'rounded-xl' : ''">
             <v-card-title>Session progress</v-card-title>
             <v-card-text>
@@ -114,7 +120,7 @@ export default Vue.extend({
         this.countries = await fetch('flags/countries.json').then(r => r.json());
         console.log(this.countries);
         let randomFlags = [] as string[];
-        while (randomFlags.length < 4) {
+        while (randomFlags.length < 3 * Math.min(1500, window.innerWidth) / 1000) {
             let url = this.randomFlagUrl();
             if (!randomFlags.includes(url))
                 randomFlags.push(url)
