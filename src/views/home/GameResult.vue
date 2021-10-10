@@ -1,5 +1,5 @@
 <template>
-    <div class="home" :style="{
+    <div class="home" v-if="result" :style="{
         alignItems:  $vuetify.breakpoint.mobile ? 'stretch' : 'flex-start',
     }">
         <v-card elevation="2" class="left-card mb-3"
@@ -95,7 +95,7 @@ export default Vue.extend({
     }),
     async mounted() {
         console.log(this.result);
-        if (!this.result) {
+        if (!this.result || this.result.history.length === 0) {
             console.warn("No known game result, redirecting to homepage");
             return await this.$router.push('/');
         }

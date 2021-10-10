@@ -15,6 +15,7 @@ const vuexLocal = new VuexPersistence({
     reducer: (state: any) => ({
         sessionDuration: state.sessionDuration,
         countries: state.countries,
+        url: state.url,
     }),
     storage: window.localStorage,
 })
