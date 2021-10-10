@@ -171,8 +171,9 @@ export default Vue.extend({
             let correctCount = correctHistory.reduce((a, b) => a + (b ? 1 : 0), 0) as number;
             let correctPercentage = correctCount / correctHistory.length;
             let rollSize = 5;
-            let rollCorrectCount = correctHistory.slice(-rollSize).reduce((a, b) => a + (b ? 1 : 0), 0) as number;
-            let rollingAccuracy = rollCorrectCount / rollSize;
+            let slicedHistory = correctHistory.slice(-rollSize);
+            let rollCorrectCount = slicedHistory.reduce((a, b) => a + (b ? 1 : 0), 0) as number;
+            let rollingAccuracy = rollCorrectCount / slicedHistory.length;
             // add to history
             this.game.answerHistory.push({
                 rollingAccuracy,
