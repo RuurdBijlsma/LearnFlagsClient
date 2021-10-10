@@ -1,9 +1,14 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-//@ts-ignore
 import {io, Socket} from "socket.io-client";
-//@ts-ignore
 import Swal from "sweetalert2";
+
+if (document.querySelectorAll(`head link[rel='manifest']`).length === 0) {
+    let manifestLink = document.createElement('link');
+    manifestLink.setAttribute('rel', 'manifest');
+    manifestLink.setAttribute('href', './manifest.json');
+    document.querySelector('head')?.appendChild?.(manifestLink);
+}
 
 Vue.use(Vuex)
 
