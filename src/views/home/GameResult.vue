@@ -71,16 +71,20 @@ export default Vue.extend({
     },
     methods: {},
     computed: {
-        accuracyHistory() {
-            return this.result?.history.map(h => h.accuracy) ?? [];
+        accuracyHistory(): number[] {
+            return this.result?.history.map((h: any) => h.accuracy) ?? [];
         },
-        result() {
+        result(): null | {
+            duration: number,
+            history: { accuracy: number, correct: boolean, countryCode: string, userAnswer: string, responseTime: number }[],
+            encounteredFlags: Set<string>,
+        } {
             return this.$store.state.gameResult;
         },
-        countries() {
+        countries(): { [key: string]: string }[] {
             return this.$store.state.countries;
         },
-        randomFlags() {
+        randomFlags(): string[] {
             return this.$store.state.randomFlags;
         },
     },

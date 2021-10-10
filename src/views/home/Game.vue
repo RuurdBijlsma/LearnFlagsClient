@@ -151,7 +151,7 @@ export default Vue.extend({
             this.game.showFeedback = false;
             this.loading.fact = true;
             this.game.fact = await this.$store.dispatch('nextFact');
-            this.game.encounteredFlags.add(this.game.fact?.question);
+            this.game.encounteredFlags.add(this.game.fact?.question ?? 'Unknown');
             console.log({fact: this.game.fact});
             this.loading.fact = false;
             this.game.factShownTimestamp = performance.now();
