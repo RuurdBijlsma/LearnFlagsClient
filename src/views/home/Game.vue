@@ -166,8 +166,12 @@ export default Vue.extend({
                 answer: this.game.userAnswer,
                 responseTime,
             });
+            // calculate correct percentage including this last fact
+            let correctCount = this.game.answerHistory.reduce((a, b) => a + (b.correct ? 1 : 0), 0);
+            let correctPercentage = correctCount / this.game.answerHistory.length;
+            // add to history
             this.game.answerHistory.push({
-                accuracy: this.correctPercentage,
+                accuracy: correctPercentage,
                 countryCode: this.game.fact?.question ?? '',
                 correct,
                 responseTime,

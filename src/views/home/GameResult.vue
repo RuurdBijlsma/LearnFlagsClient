@@ -14,7 +14,7 @@
                     <br>
                     Overall accuracy: <b>{{ Math.round(correctPercentage * 100) }}%</b>
                     <br>
-                    Answers given: <b>{{result.history.length}}</b>
+                    Answers given: <b>{{ result.history.length }}</b>
                     <br>
                     Flags encountered: <b>{{ result.encounteredFlags.size }}</b>
                     <v-divider class="mb-3 mt-3"/>
@@ -104,7 +104,8 @@ export default Vue.extend({
             this.$store.dispatch('getStats')
         ]);
         //
-        this.factActivations = Object.entries(stats).map(([key, [a, rof]]) => {
+        this.factActivations = Object.entries(stats).map(([key, values]) => {
+            let [a, rof] = values as (string | number)[];
             let activation;
             if (a === 'inf')
                 activation = Infinity;
@@ -113,7 +114,7 @@ export default Vue.extend({
             else
                 activation = +a;
 
-            return {key, activation, rof};
+            return {key, activation, rof: +rof};
         }).filter(i => i.activation !== -Infinity).sort((a, b) => b.activation - a.activation);
         console.log(this.factActivations);
     },
@@ -146,10 +147,10 @@ export default Vue.extend({
             return this.$store.state.randomFlags;
         },
         correctPercentage(): number {
-            if (!this.result.history.length) return 0;
+            if (!this.result?.history.length) return 0;
             console.log('result history', this.result.history);
-            let correctCount = this.result.history.reduce((a, b) => a + (b.correct ? 1 : 0), 0);
-            return correctCount / this.result.history.length;
+            let correctCount = this.result?.history.reduce((a, b) => a + (b.correct ? 1 : 0), 0);
+            return correctCount / this.result?.history.length;
         },
     },
 })
