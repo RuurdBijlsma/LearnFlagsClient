@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter, {RouteConfig} from 'vue-router'
-import Home from '../views/Home.vue'
+import GameIntro from "@/views/home/GameIntro.vue";
 
 Vue.use(VueRouter)
 
@@ -8,24 +8,17 @@ const routes: Array<RouteConfig> = [
     {
         path: '/',
         name: 'Home',
-        component: Home,
-        children:[
-            {
-                path: '/',
-                name: 'GameIntro',
-                component: () => import('../views/Home/GameIntro.vue')
-            },
-            {
-                path: '/play',
-                name: 'Game',
-                component: () => import('../views/Home/Game.vue')
-            },
-            {
-                path: '/result',
-                name: 'GameResult',
-                component: () => import('../views/Home/GameResult.vue')
-            },
-        ]
+        component: GameIntro,
+    },
+    {
+        path: '/play',
+        name: 'Game',
+        component: () => import('../views/home/Game.vue')
+    },
+    {
+        path: '/result',
+        name: 'GameResult',
+        component: () => import('../views/home/GameResult.vue')
     },
     {
         path: '/settings',

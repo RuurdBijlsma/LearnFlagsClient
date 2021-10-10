@@ -14,6 +14,7 @@ if (document.querySelectorAll(`head link[rel='manifest']`).length === 0) {
 const vuexLocal = new VuexPersistence({
     reducer: (state: any) => ({
         sessionDuration: state.sessionDuration,
+        countries: state.countries,
     }),
     storage: window.localStorage,
 })
@@ -27,8 +28,18 @@ export default new Vuex.Store({
         errorShown: false,
         connected: false,
         sessionDuration: 10,
+        countries: [] as { [key: string]: string }[],
+        gameResult: null as null | {
+            duration: number,
+            history: {accuracy:number, correct: boolean, countryCode: string, userAnswer: string, responseTime: number }[],
+            encounteredFlags: Set<string>,
+        },
+        randomFlags: [] as string[],
     },
     mutations: {
+        randomFlags: (state, randomFlags) => state.randomFlags = randomFlags,
+        gameResult: (state, gameResult) => state.gameResult = gameResult,
+        countries: (state, countries) => state.countries = countries,
         socketUrl: (state, socketUrl) => state.url = socketUrl,
         sessionDuration: (state, sessionDuration) => state.sessionDuration = sessionDuration,
         socket: (state, socket) => state.socket = socket,
@@ -36,7 +47,25 @@ export default new Vuex.Store({
         errorShown: (state, errorShown) => state.errorShown = errorShown,
         connected: (state, value) => state.connected = value,
     },
+    getters: {
+        flagList: state => Object.keys(state.countries ?? {}),
+        flagUrl: () => (countryCode: string) => `flags/svg/${countryCode.toLowerCase()}.svg`,
+        randomFlagUrl: (state, getters) => () => getters.flagUrl(getters.randomFlag()),
+        randomFlag: (state, getters) => () => getters.flagList[Math.floor(Math.random() * getters.flagList.length)],
+    },
     actions: {
+        async initRandomFlags({state, getters, commit}) {
+            if (getters.flagList === 0)
+                commit('countries', await fetch('flags/countries.json').then(r => r.json()));
+            console.log(state.countries);
+            let randomFlags = [] as string[];
+            while (randomFlags.length < 3 * Math.min(1500, window.innerWidth) / 1000) {
+                let url = await getters.randomFlagUrl();
+                if (!randomFlags.includes(url))
+                    randomFlags.push(url)
+            }
+            commit('randomFlags', randomFlags);
+        },
         async answerFact({state}, {countryCode = '', answer = '', responseTime = 0}) {
             return new Promise<void>((resolve) => {
                 state.socket?.emit('register_response', countryCode, answer, responseTime, resolve);
