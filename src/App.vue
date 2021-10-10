@@ -1,8 +1,8 @@
 <template>
     <v-app :style="{background: $vuetify.theme.themes[theme].background}">
-        <v-app-bar app color="primary" dark>
+        <v-app-bar app color="primary" dark v-if="!$vuetify.breakpoint.mobile">
             <div class="app-bar-center">
-                <v-app-bar-title v-if="$vuetify.breakpoint.width > 500" class="app-bar-text">
+                <v-app-bar-title class="app-bar-text">
                     Learning Flags
                 </v-app-bar-title>
                 <div class="links">
@@ -14,6 +14,17 @@
         <v-main>
             <router-view/>
         </v-main>
+
+        <v-bottom-navigation color="primary" v-if="$vuetify.breakpoint.mobile" grow>
+            <v-btn to="/" exact>
+                <span>Home</span>
+                <v-icon>mdi-home</v-icon>
+            </v-btn>
+            <v-btn to="/settings" exact>
+                <span>Settings</span>
+                <v-icon>mdi-cog</v-icon>
+            </v-btn>
+        </v-bottom-navigation>
     </v-app>
 </template>
 
