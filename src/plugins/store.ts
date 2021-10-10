@@ -55,7 +55,8 @@ export default new Vuex.Store({
     },
     actions: {
         async initRandomFlags({state, getters, commit}) {
-            if (getters.flagList === 0)
+            console.log('flag list length', getters.flagList.length)
+            if (getters.flagList.length === 0)
                 commit('countries', await fetch('flags/countries.json').then(r => r.json()));
             console.log(state.countries);
             let randomFlags = [] as string[];

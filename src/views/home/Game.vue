@@ -8,7 +8,7 @@
             <v-card-title>What flag is this?</v-card-title>
             <v-divider/>
             <v-sheet color="lightBackground" class="flag" v-if="game.fact">
-                <v-img contain :src="flagUrl(game.fact.question)"/>
+                <v-img contain :src="$store.getters.flagUrl(game.fact.question)"/>
             </v-sheet>
             <v-divider/>
             <v-card-text>
@@ -183,9 +183,6 @@ export default Vue.extend({
             this.game.showFeedback = true;
             this.loading.answer = false;
 
-        },
-        flagUrl(countryCode: string) {
-            return `flags/svg/${countryCode.toLowerCase()}.svg`
         },
         toHms(s: number) {
             return secondsToHms(s);
