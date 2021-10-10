@@ -8,7 +8,7 @@
             <v-card-title>What flag is this?</v-card-title>
             <v-divider/>
             <v-sheet color="lightBackground" class="flag" v-if="game.fact">
-                <v-img contain :src="flagUrl(game.fact.fact_id)"/>
+                <v-img contain :src="flagUrl(game.fact.question)"/>
             </v-sheet>
             <v-divider/>
             <v-card-text>
@@ -93,7 +93,7 @@ export default Vue.extend({
             startTime: 0,
             duration: 0,
             timeLeft: 1,
-            fact: null as null | { fact_id: string, answer: string, question: string },
+            fact: null as null | { fact_id: number, answer: string, question: string },
             userAnswer: '',
             factShownTimestamp: 0,
             correctAnswer: false,
@@ -151,7 +151,7 @@ export default Vue.extend({
             this.game.showFeedback = false;
             this.loading.fact = true;
             this.game.fact = await this.$store.dispatch('nextFact');
-            this.game.encounteredFlags.add(this.game.fact?.fact_id);
+            this.game.encounteredFlags.add(this.game.fact?.question);
             console.log({fact: this.game.fact});
             this.loading.fact = false;
             this.game.factShownTimestamp = performance.now();
@@ -162,19 +162,19 @@ export default Vue.extend({
             this.loading.answer = true;
             let responseTime = performance.now() - this.game.factShownTimestamp;
             let correct = await this.$store.dispatch('answerFact', {
-                countryCode: this.game.fact?.fact_id,
+                countryCode: this.game.fact?.question,
                 answer: this.game.userAnswer,
                 responseTime,
             });
             this.game.answerHistory.push({
                 accuracy: this.correctPercentage,
-                countryCode: this.game.fact?.fact_id ?? '',
+                countryCode: this.game.fact?.question ?? '',
                 correct,
                 responseTime,
                 userAnswer: this.game.userAnswer,
             });
             console.log("answered fact", {
-                countryCode: this.game.fact?.fact_id,
+                countryCode: this.game.fact?.question,
                 answer: this.game.userAnswer,
                 responseTime,
                 correct,
