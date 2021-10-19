@@ -37,6 +37,7 @@ export default new Vuex.Store({
         },
         randomFlags: [] as string[],
         factCount: 1,
+        enablePropagation: true,
     },
     mutations: {
         factCount: (state, factCount) => state.factCount = factCount,
@@ -49,6 +50,7 @@ export default new Vuex.Store({
         url: (state, url) => state.url = url,
         errorShown: (state, errorShown) => state.errorShown = errorShown,
         connected: (state, value) => state.connected = value,
+        propagation: (state, value) => state.enablePropagation = value,
     },
     getters: {
         flagList: state => Object.keys(state.countries ?? {}),
@@ -108,9 +110,18 @@ export default new Vuex.Store({
                         reject(e);
                     }
                 });
-                state.socket.on('fact_count', l => commit('factCount', l));
             })
         },
+
+        async resetModel({commit, state}) {
+            return new Promise<void>((resolve) => {
+                const callback = (factCount: number) => {
+                    commit('factCount', factCount);
+                    resolve();
+                }
+                state.socket?.emit('reset_model', state.enablePropagation, callback)
+            })
+        }
     },
     modules: {},
     plugins: [vuexLocal.plugin],
