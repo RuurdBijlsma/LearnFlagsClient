@@ -110,7 +110,6 @@ export default new Vuex.Store({
                         reject(e);
                     }
                 });
-                state.socket.on('fact_count', l => commit('factCount', l));
             })
         },
 
