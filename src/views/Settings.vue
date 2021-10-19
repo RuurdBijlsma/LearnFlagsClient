@@ -5,6 +5,10 @@
                       class="mt-4"
                       label="Server URL"
                       outlined hide-details/>
+        <v-switch v-model="enablePropagation"
+                      class="mt-4"
+                      label="Enable fact propagation"
+                      outlined hide-details/>
     </v-card>
 </template>
 
@@ -24,6 +28,14 @@ export default Vue.extend({
             set(v: string) {
                 this.$store.commit('socketUrl', v);
             },
+        },
+        enablePropagation: {
+            get(): boolean {
+                return this.$store.state.enablePropagation;
+            },
+            set(v: boolean) {
+                this.$store.commit('propagation', v);
+            }
         }
     },
 });

@@ -71,6 +71,7 @@ export default Vue.extend({
             this.loading.connection = true;
             try {
                 await this.$store.dispatch('initializeSocket');
+                await this.$store.dispatch('resetModel')
             } catch (e) {
                 return;
             } finally {

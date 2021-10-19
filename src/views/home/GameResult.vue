@@ -52,7 +52,9 @@
                         <div class="item-text">
                             {{ countries[fact.key] }}
                             <br>
-                            Activation: {{ Math.round(fact.activation * 100) }}
+                            Activation: {{ fact.activation.toFixed(2) }}
+                            <br>
+                            Rate of Forgetting: {{ fact.rof.toFixed(2) }}
                             <br>
                             Accuracy: {{ Math.round(fact.accuracy * 100) }}%
                         </div>
