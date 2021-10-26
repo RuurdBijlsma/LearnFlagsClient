@@ -4,39 +4,30 @@
     }">
         <v-card elevation="2" class="left-card"
                 :class="$vuetify.breakpoint.width > 1300 ? 'rounded-xl' : ''">
-            <v-card-title>Learn country flags!</v-card-title>
+            <v-card-title>Experiment sessions</v-card-title>
             <div class="flags">
                 <v-img :key="flag" v-for="flag in randomFlags" :aspect-ratio="3/2" :src="flag"/>
             </div>
             <div class="slider-container">
-                <v-toolbar flat dense>
-                    <v-toolbar-title>
-                        <span class="subheading">Session duration</span>
-                    </v-toolbar-title>
-                </v-toolbar>
+                <p class="body-1">Session duration</p>
 
-                <v-col class="text-left">
+                <v-col class="text-left mb-4">
                     <span class="text-h2 font-weight-light" v-text="sessionDuration"></span>
-                    <span class="subheading font-weight-light mr-1">minutes</span>
+                    <span class="subheading font-weight-light mr-1">minutes per learning session</span>
                 </v-col>
-                <div class="slider">
-                    <span>5 min</span>
-                    <v-slider step="5"
-                              hide-details
-                              ticks="always"
-                              tick-size="4"
-                              prepend-icon="mdi-clock-outline"
-                              min="5" max="60"
-                              v-model="sessionDuration">
-                    </v-slider>
-                    <span>60 min</span>
-                </div>
+                <p class="body-1">This experiment is structured as follows:</p>
+                <ol>
+                    <li>Learn a subset of flags with/without our changes to the SlimStampen algorithm for 10 minutes.</li>
+                    <li>Test your knowledge of the subset of flags.</li>
+                    <li>Learn a different subset of flags with/without our changes to the SlimStampen algorithm for 10 minutes.</li>
+                    <li>Test your knowledge of that subset of flags.</li>
+                </ol>
             </div>
             <v-card-actions>
                 <v-btn rounded color="primary"
                        :loading="loading.connection"
                        @click="newGame">
-                    <span class="ml-4 mr-4">Start learning</span>
+                    <span class="ml-4 mr-4">Start experiment</span>
                 </v-btn>
             </v-card-actions>
         </v-card>
@@ -71,7 +62,6 @@ export default Vue.extend({
             this.loading.connection = true;
             try {
                 await this.$store.dispatch('initializeSocket');
-                await this.$store.dispatch('resetModel')
             } catch (e) {
                 return;
             } finally {
@@ -79,7 +69,7 @@ export default Vue.extend({
             }
             if (!this.connected)
                 return;
-            await this.$router.push('/play');
+            await this.$router.push('/experiment/learn-intro/0');
         },
     },
     computed: {

@@ -7,6 +7,7 @@
                 </v-app-bar-title>
                 <div class="links">
                     <v-btn plain to="/" exact>Home</v-btn>
+                    <v-btn plain to="/experiment">Experiment</v-btn>
                     <v-btn plain to="/settings" exact>Settings</v-btn>
                 </div>
             </div>
@@ -19,6 +20,10 @@
             <v-btn to="/" exact :style="{height: 'inherit !important'}">
                 <span>Home</span>
                 <v-icon>mdi-home</v-icon>
+            </v-btn>
+            <v-btn to="/experiment" :style="{height: 'inherit !important'}">
+                <span>Experiment</span>
+                <v-icon>mdi-school</v-icon>
             </v-btn>
             <v-btn to="/settings" exact :style="{height: 'inherit !important'}">
                 <span>Settings</span>
@@ -88,7 +93,7 @@ a[no-style]:hover {
 .links {
     display: flex;
     width: 100%;
-    max-width: 200px;
+    max-width: 320px;
     justify-content: space-between;
 }
 </style>

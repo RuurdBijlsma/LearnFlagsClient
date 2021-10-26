@@ -32,17 +32,29 @@ export default new Vuex.Store({
         countries: [] as { [key: string]: string }[],
         gameResult: null as null | {
             duration: number,
-            history: { rollingAccuracy: number, accuracy: number, correct: boolean, countryCode: string, userAnswer: string, responseTime: number }[],
+            history: {
+                rollingAccuracy: number, accuracy: number, correct: boolean,
+                countryCode: string, userAnswer: string, responseTime: number
+            }[],
             encounteredFlags: Set<string>,
         },
+        experimentResults: [] as {
+            duration: number,
+            history: {
+                rollingAccuracy: number, accuracy: number, correct: boolean,
+                countryCode: string, userAnswer: string, responseTime: number
+            }[],
+        }[],
         randomFlags: [] as string[],
         factCount: 1,
-        enablePropagation: true,
+        propagationSubsetId: 0,
     },
     mutations: {
         factCount: (state, factCount) => state.factCount = factCount,
         randomFlags: (state, randomFlags) => state.randomFlags = randomFlags,
         gameResult: (state, gameResult) => state.gameResult = gameResult,
+        experimentResults: (state, experimentResults) => state.experimentResults = experimentResults,
+        addExperimentResult: (state, experimentResult) => state.experimentResults.push(experimentResult),
         countries: (state, countries) => state.countries = countries,
         socketUrl: (state, socketUrl) => state.url = socketUrl,
         sessionDuration: (state, sessionDuration) => state.sessionDuration = sessionDuration,
@@ -50,7 +62,7 @@ export default new Vuex.Store({
         url: (state, url) => state.url = url,
         errorShown: (state, errorShown) => state.errorShown = errorShown,
         connected: (state, value) => state.connected = value,
-        propagation: (state, value) => state.enablePropagation = value,
+        propagationSubsetId: (state, value) => state.propagationSubsetId = value,
     },
     getters: {
         flagList: state => Object.keys(state.countries ?? {}),
@@ -94,6 +106,8 @@ export default new Vuex.Store({
                 if (state.socket === null) return;
                 state.socket.on('connect', () => {
                     console.log("CONNECTED");
+                    commit('propagationSubsetId', +(Math.random() > .5));
+                    console.log(`Propagation is enabled for subset: ${state.propagationSubsetId}`);
                     commit('connected', true);
                     resolve();
                 });
@@ -113,13 +127,12 @@ export default new Vuex.Store({
             })
         },
 
-        async resetModel({commit, state}) {
+        async resetModel({commit, state}, {subsetId, enablePropagation = true}) {
             return new Promise<void>((resolve) => {
-                const callback = (factCount: number) => {
+                state.socket?.emit('reset_model', subsetId, enablePropagation, (factCount: number) => {
                     commit('factCount', factCount);
                     resolve();
-                }
-                state.socket?.emit('reset_model', state.enablePropagation, callback)
+                })
             })
         }
     },
