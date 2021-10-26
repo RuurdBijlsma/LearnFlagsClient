@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import {io, Socket} from "socket.io-client";
 import Swal from "sweetalert2";
 import VuexPersistence from "vuex-persist";
+import {ModelStat, TestResult} from "@/ts/types";
 
 if (document.querySelectorAll(`head link[rel='manifest']`).length === 0) {
     let manifestLink = document.createElement('link');
@@ -29,32 +30,30 @@ export default new Vuex.Store({
         errorShown: false,
         connected: false,
         sessionDuration: 10,
-        countries: [] as { [key: string]: string }[],
-        gameResult: null as null | {
-            duration: number,
-            history: {
-                rollingAccuracy: number, accuracy: number, correct: boolean,
-                countryCode: string, userAnswer: string, responseTime: number
-            }[],
-            encounteredFlags: Set<string>,
+        countries: [] as { [countryCode: string]: string }[],
+        learnResults: {} as {
+            [subsetId: string]: TestResult
         },
-        experimentResults: [] as {
-            duration: number,
-            history: {
-                rollingAccuracy: number, accuracy: number, correct: boolean,
-                countryCode: string, userAnswer: string, responseTime: number
-            }[],
-        }[],
+        testResults: {} as {
+            [subsetId: string]: TestResult
+        },
+        modelStats: {} as {
+            [flag: string]: ModelStat[],
+        },
         randomFlags: [] as string[],
         factCount: 1,
         propagationSubsetId: 0,
     },
     mutations: {
+        learnResults: (state, learnResults) => state.learnResults = learnResults,
+        setLearnResult: (state, {subsetId, learnResult}) => Vue.set(state.learnResults, subsetId, learnResult),
+        testResults: (state, testResults) => state.testResults = testResults,
+        setTestResult: (state, {subsetId, testResult}) => Vue.set(state.testResults, subsetId, testResult),
+        modelStats: (state, modelStats) => state.modelStats = modelStats,
+        setModelStat: (state, {subsetId, modelStats}) => Vue.set(state.modelStats, subsetId, modelStats),
+
         factCount: (state, factCount) => state.factCount = factCount,
         randomFlags: (state, randomFlags) => state.randomFlags = randomFlags,
-        gameResult: (state, gameResult) => state.gameResult = gameResult,
-        experimentResults: (state, experimentResults) => state.experimentResults = experimentResults,
-        addExperimentResult: (state, experimentResult) => state.experimentResults.push(experimentResult),
         countries: (state, countries) => state.countries = countries,
         socketUrl: (state, socketUrl) => state.url = socketUrl,
         sessionDuration: (state, sessionDuration) => state.sessionDuration = sessionDuration,
@@ -71,6 +70,28 @@ export default new Vuex.Store({
         randomFlag: (state, getters) => () => getters.flagList[Math.floor(Math.random() * getters.flagList.length)],
     },
     actions: {
+        async downloadResults({state}) {
+            const download = (filename: string, data: string) => {
+                const blob = new Blob([data], {type: 'text/csv'});
+                //@ts-ignore
+                if (window.navigator.msSaveOrOpenBlob) {
+                    window.navigator.msSaveBlob(blob, filename);
+                } else {
+                    const elem = window.document.createElement('a');
+                    elem.href = window.URL.createObjectURL(blob);
+                    elem.download = filename;
+                    document.body.appendChild(elem);
+                    elem.click();
+                    document.body.removeChild(elem);
+                }
+            }
+            download(`exp-result-${(new Date).toISOString()}.json`, JSON.stringify({
+                test: state.testResults,
+                learn: state.learnResults,
+                model: state.modelStats,
+            }));
+            console.log(state, 'd');
+        },
         async initRandomFlags({state, getters, commit}) {
             console.log('flag list length', getters.flagList.length)
             if (getters.flagList.length === 0)
@@ -84,10 +105,27 @@ export default new Vuex.Store({
             }
             commit('randomFlags', randomFlags);
         },
-        async getStats({state}) {
+        async getSubsetFlags({state}, subsetId) {
             return new Promise<void>((resolve) => {
+                state.socket?.emit('get_subset_flags', subsetId, resolve);
+            });
+        },
+        async getStats({state}) {
+            let stats: any = await new Promise<void>((resolve) => {
                 state.socket?.emit('get_stats', resolve);
             });
+            return Object.entries(stats).map(([key, values]) => {
+                let [a, rof] = values as (string | number)[];
+                let activation;
+                if (a === 'inf')
+                    activation = Infinity;
+                else if (a === '-inf')
+                    activation = -Infinity;
+                else
+                    activation = +a;
+                return {key, activation, rof: +rof};
+            }).filter(i => i.activation !== -Infinity)
+                .sort((a, b) => b.activation - a.activation);
         },
         async answerFact({state}, {countryCode = '', answer = '', responseTime = 0}) {
             return new Promise<void>((resolve) => {
@@ -102,6 +140,9 @@ export default new Vuex.Store({
         async initializeSocket({commit, state}) {
             console.log("Called initializeSocket")
             commit('socket', io(state.url));
+            commit('testResults', {});
+            commit('learnResults', {});
+            commit('modelStats', {});
             return new Promise<void>((resolve, reject) => {
                 if (state.socket === null) return;
                 state.socket.on('connect', () => {

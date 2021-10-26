@@ -9,57 +9,7 @@
                 <v-img :key="flag" v-for="flag in randomFlags" :aspect-ratio="3/2" :src="flag"/>
             </div>
             <v-card-text class="results">
-                <div>
-                    Session duration: <b>{{ toHms(result.duration) }}</b>
-                    <br>
-                    Overall accuracy: <b>{{ Math.round(correctPercentage * 100) }}%</b>
-                    <br>
-                    Answers given: <b>{{ result.history.length }}</b>
-                    <br>
-                    Flags encountered: <b>{{ result.encounteredFlags.size }}</b>
-                    <v-divider class="mb-3 mt-3"/>
-                </div>
-                <h3 class="mb-4">Rolling average accuracy over time</h3>
-                <v-divider class="mb-3 mt-3"/>
-                <div class="sparkline mt-4">
-                    <div class="min-max">
-                        <span>{{ Math.round(maxRollingAccuracy * 100) }}%</span>
-                        <span>{{ Math.round(minRollingAccuracy * 100) }}%</span>
-                    </div>
-                    <v-divider class="ml-2" vertical/>
-                    <v-sparkline
-                        :value="rollingAccuracyHistory"
-                        :gradient="lineConfig.gradient"
-                        :smooth="lineConfig.radius || false"
-                        :padding="lineConfig.padding"
-                        :line-width="lineConfig.width"
-                        :stroke-linecap="lineConfig.lineCap"
-                        :gradient-direction="lineConfig.gradientDirection"
-                        :fill="lineConfig.fill"
-                        :type="lineConfig.type"
-                        :auto-line-width="lineConfig.autoLineWidth"
-                        auto-draw/>
-                </div>
-                <v-divider class="mb-3 mt-3"/>
-                <h3 class="mt-4 mb-4">Best known flags</h3>
-                <v-divider class="mb-3 mt-3"/>
-                <div class="flag-grid">
-                    <v-img v-for="fact in factActivations" :key="fact.key"
-                           width="300" height="180"
-                           class="item-img"
-                           :src="$store.getters.flagUrl(fact.key)"
-                           gradient="to top right, rgba(50,62,100,.5), rgba(25,32,72,0)">
-                        <div class="item-text">
-                            {{ countries[fact.key] }}
-                            <br>
-                            Activation: {{ fact.activation.toFixed(2) }}
-                            <br>
-                            Rate of Forgetting: {{ fact.rof.toFixed(2) }}
-                            <br>
-                            Accuracy: {{ Math.round(fact.accuracy * 100) }}%
-                        </div>
-                    </v-img>
-                </div>
+                <test-result-view :result="result" learn-result/>
             </v-card-text>
             <v-card-actions>
                 <v-btn rounded color="primary" to="/">
@@ -73,76 +23,19 @@
 <script lang="ts">
 import Vue from 'vue'
 import {secondsToHms} from "@/ts/utils";
-
-const gradients = [
-    ['#222'],
-    ['#42b3f4'],
-    ['red', 'orange', 'yellow'],
-    ['purple', 'violet'],
-    ['#00c6ff', '#F0F', '#FF0'],
-    ['#1feaea', '#ffd200', '#f72047'],
-]
+import {TestResult} from "@/ts/types";
+import TestResultView from "@/components/TestResultView.vue";
 
 export default Vue.extend({
     name: 'GameResult',
-    data: () => ({
-        lineConfig: {
-            width: 2,
-            radius: 10,
-            padding: 8,
-            lineCap: 'round',
-            gradient: gradients[5],
-            gradientDirection: 'top',
-            gradients,
-            fill: false,
-            type: 'trend',
-            autoLineWidth: false,
-        },
-        factActivations: null as null | { key: string, activation: number, rof: number, accuracy: number }[],
-    }),
+    components: {TestResultView},
     async mounted() {
         console.log(this.result);
         if (!this.result || this.result.history.length === 0) {
             console.warn("No known game result, redirecting to homepage");
             return await this.$router.push('/');
         }
-        let [, stats] = await Promise.all([
-            this.$store.dispatch('initRandomFlags'),
-            this.$store.dispatch('getStats')
-        ]);
-        let accuracyPerFlag = {} as any;
-        for (let encounter of this.result.history) {
-            if (!accuracyPerFlag.hasOwnProperty(encounter.countryCode)) {
-                accuracyPerFlag[encounter.countryCode] = {
-                    correct: encounter.correct ? 1 : 0,
-                    incorrect: encounter.correct ? 0 : 1,
-                };
-            } else {
-                if (encounter.correct) {
-                    accuracyPerFlag[encounter.countryCode].correct++;
-                } else {
-                    accuracyPerFlag[encounter.countryCode].incorrect++;
-                }
-            }
-        }
-        console.log('accuracy per flag', accuracyPerFlag);
-        this.factActivations = Object.entries(stats).map(([key, values]) => {
-            let [a, rof] = values as (string | number)[];
-            let activation;
-            if (a === 'inf')
-                activation = Infinity;
-            else if (a === '-inf')
-                activation = -Infinity;
-            else
-                activation = +a;
-
-            let apf = accuracyPerFlag[key];
-            let accuracy = apf ? apf.correct / (apf.correct + apf.incorrect) : -1;
-            return {key, activation, rof: +rof, accuracy};
-        }).filter(i => i.activation !== -Infinity)
-            .sort((a, b) => b.activation - a.activation)
-            .sort((a, b) => b.accuracy - a.accuracy)
-        console.log(this.factActivations);
+        await this.$store.dispatch('initRandomFlags');
     },
     methods: {
         toHms(s: number) {
@@ -150,24 +43,8 @@ export default Vue.extend({
         },
     },
     computed: {
-        rollingAccuracyHistory(): number[] {
-            return this.result?.history.map((h: any) => h.rollingAccuracy) ?? [];
-        },
-        accuracyHistory(): number[] {
-            return this.result?.history.map((h: any) => h.accuracy) ?? [];
-        },
-        minRollingAccuracy(): number {
-            return Math.min(...this.rollingAccuracyHistory);
-        },
-        maxRollingAccuracy(): number {
-            return Math.max(...this.rollingAccuracyHistory);
-        },
-        result(): null | {
-            duration: number,
-            history: { accuracy: number, correct: boolean, countryCode: string, userAnswer: string, responseTime: number }[],
-            encounteredFlags: Set<string>,
-        } {
-            return this.$store.state.gameResult;
+        result(): null | TestResult {
+            return this.$store.state.learnResults[-1] ?? null;
         },
         countries(): { [key: string]: string }[] {
             return this.$store.state.countries;

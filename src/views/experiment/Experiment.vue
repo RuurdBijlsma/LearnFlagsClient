@@ -76,6 +76,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import {secondsToHms} from "@/ts/utils";
+import {EncounterResult, TestResult} from "@/ts/types";
 
 export default Vue.extend({
     name: 'Game',
@@ -94,7 +95,7 @@ export default Vue.extend({
             factShownTimestamp: 0,
             correctAnswer: false,
             showFeedback: false,
-            answerHistory: [] as { rollingAccuracy: number, accuracy: number, correct: boolean, countryCode: string, userAnswer: string, responseTime: number }[],
+            answerHistory: [] as EncounterResult[],
             encounteredFlags: new Set() as Set<string>,
         },
         timerInterval: -1,
@@ -136,13 +137,16 @@ export default Vue.extend({
         async stopGame() {
             clearInterval(this.timerInterval);
             let elapsed = (performance.now() - this.game.startTime) / 1000;
-            let gameResult = {
+            let learnResult: TestResult = {
                 duration: Math.min(this.game.duration, elapsed),
                 history: this.game.answerHistory,
                 encounteredFlags: this.game.encounteredFlags,
             };
-            console.log('committing game result', gameResult);
-            this.$store.commit('gameResult', gameResult);
+            console.log('committing game result', learnResult);
+            let modelStats = await this.$store.dispatch('getStats');
+            console.log({modelStats});
+            this.$store.commit('setModelStat', {subsetId: this.subsetId, modelStats})
+            this.$store.commit('setLearnResult', {subsetId: this.subsetId, learnResult});
             await this.$router.push(`/experiment/test-intro/${this.subsetId}`)
         },
         async nextFact() {

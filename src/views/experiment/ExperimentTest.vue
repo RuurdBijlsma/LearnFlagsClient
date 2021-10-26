@@ -53,49 +53,44 @@ import {secondsToHms} from "@/ts/utils";
 import levenshtein from 'fast-levenshtein';
 //@ts-ignore
 import unidecode from 'unidecode';
+import {EncounterResult, TestResult} from "@/ts/types";
 
 export default Vue.extend({
     name: 'Game',
     components: {},
     data: () => ({
-        flagList: [
-            {question: 'DE', answer: 'Germany'},
-            {question: 'NL', answer: 'Netherlands'},
-            {question: 'HU', answer: 'Hungary'},
-        ],
+        flagList: [] as { question: string, answer: string }[],
         factIndex: -1,
         game: {
             startTime: 0,
             userAnswer: '',
             fact: null as null | { question: string, answer: string },
             factShownTimestamp: 0,
-            answerHistory: [] as {
-                rollingAccuracy: number, accuracy: number, correct: boolean,
-                countryCode: string, userAnswer: string, responseTime: number
-            }[],
+            answerHistory: [] as EncounterResult[],
         },
     }),
     async mounted() {
         if (!this.connected)
             return await this.$router.push('/experiment');
 
-        console.log(levenshtein.get('kazahkstan', 'kazakhstan'), 'editstiance')
-        this.newGame();
+        await this.newGame();
     },
     methods: {
-        newGame() {
+        async newGame() {
+            this.flagList = await this.$store.dispatch('getSubsetFlags', this.subsetId);
+            console.log("flaglist result:", this.flagList);
             this.game.startTime = performance.now();
             this.nextFact();
         },
         async stopGame() {
             let elapsed = (performance.now() - this.game.startTime) / 1000;
-            let experimentResult = {
+            let testResult: TestResult = {
                 duration: elapsed,
                 history: this.game.answerHistory,
+                encounteredFlags: new Set(this.flagList.map(f => f.question)),
             };
-            console.log('committing game result', experimentResult);
-            if (this.subsetId === 0) this.$store.commit('experimentResults', []);
-            this.$store.commit('addExperimentResult', experimentResult);
+            console.log('committing game result', testResult);
+            this.$store.commit('setTestResult', {subsetId: this.subsetId, testResult});
             if (this.subsetId === 0) {
                 await this.$router.push(`/experiment/learn-intro/1`)
             } else if (this.subsetId === 1) {
