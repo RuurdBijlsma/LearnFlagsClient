@@ -145,8 +145,8 @@ export default Vue.extend({
             };
             console.log('committing game result', learnResult);
             let modelStats = await this.$store.dispatch('getStats');
-            this.$store.commit('setModelStat', {subsetId: -1, modelStats})
-            this.$store.commit('setLearnResult', {subsetId: -1, learnResult});
+            this.$store.commit('setModelStat', {subsetId: null, modelStats})
+            this.$store.commit('setLearnResult', {subsetId: null, learnResult});
             await this.$router.push('/result');
         },
         async nextFact() {

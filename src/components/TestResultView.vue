@@ -81,7 +81,7 @@ export default Vue.extend({
         },
         subsetId: {
             type: Number,
-            default: -1,
+            default: null,
         },
     },
     data: () => ({
