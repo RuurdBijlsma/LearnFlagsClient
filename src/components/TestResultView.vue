@@ -44,9 +44,9 @@
                     <div class="item-text">
                         {{ countries[fact.key] }}
                         <br>
-                        Activation: {{ fact.activation.toFixed(2) }}
+                        Activation: {{ fact.activation }}
                         <br>
-                        Rate of Forgetting: {{ fact.rof.toFixed(2) }}
+                        Rate of Forgetting: {{ fact.rof }}
                     </div>
                 </v-img>
             </div>

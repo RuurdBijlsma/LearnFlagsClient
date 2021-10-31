@@ -63,7 +63,9 @@ export default Vue.extend({
             alert("Don't forget to download your results!");
         }
         console.log(this.learnResults);
-        if (!this.learnResults || !this.learnResults[0] || this.learnResults[0].history.length === 0) {
+        if (!this.learnResults ||
+            (!this.learnResults[0] || this.learnResults[0].history.length === 0) &&
+            (!this.learnResults[1] || this.learnResults[1].history.length === 0)) {
             console.warn("No known game result, redirecting to homepage");
             return await this.$router.push('/experiment');
         }
