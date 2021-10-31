@@ -4,6 +4,7 @@ import {io, Socket} from "socket.io-client";
 import Swal from "sweetalert2";
 import VuexPersistence from "vuex-persist";
 import {ModelStat, TestResult} from "@/ts/types";
+import {defaultUrl} from "@/ts/utils";
 
 if (document.querySelectorAll(`head link[rel='manifest']`).length === 0) {
     let manifestLink = document.createElement('link');
@@ -26,7 +27,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     state: {
         socket: null as null | Socket,
-        url: 'ws://localhost:5000',
+        url: defaultUrl ,
         errorShown: false,
         connected: false,
         sessionDuration: 10,

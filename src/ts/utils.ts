@@ -19,3 +19,6 @@ export function secondsToHms(seconds: number) {
         return `${ms}:${ss}`;
     else return `${hs}:${ms}:${ss}`;
 }
+
+export const defaultUrl: string = process.env.NODE_ENV === 'development' ?
+    'ws://localhost:5000' : 'wss://flags.ruurd.dev';

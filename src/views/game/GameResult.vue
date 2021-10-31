@@ -44,6 +44,7 @@ export default Vue.extend({
     },
     computed: {
         result(): null | TestResult {
+            //@ts-ignore
             return this.$store.state.learnResults[null] ?? null;
         },
         countries(): { [key: string]: string }[] {
