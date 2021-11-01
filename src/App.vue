@@ -80,6 +80,10 @@ html, body {
     width: 250px !important;
 }
 
+.v-app-bar-title__content {
+    width: auto !important;
+}
+
 
 a[no-style] {
     text-decoration: none;

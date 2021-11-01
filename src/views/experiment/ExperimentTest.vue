@@ -39,9 +39,9 @@
             <v-card-text>
                 <p>{{ factIndex }} / {{ $store.state.factCount }} flags encountered</p>
             </v-card-text>
-            <v-card-actions>
-                <v-btn @click="stopGame"></v-btn>
-            </v-card-actions>
+<!--            <v-card-actions>-->
+<!--                <v-btn @click="stopGame"></v-btn>-->
+<!--            </v-card-actions>-->
         </v-card>
     </div>
 </template>

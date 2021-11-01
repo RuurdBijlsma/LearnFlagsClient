@@ -66,9 +66,9 @@
                 <p>{{ game.encounteredFlags.size }} / {{ $store.state.factCount }} flags encountered</p>
                 <p>{{ Math.round(correctPercentage * 100) }}% correct</p>
             </v-card-text>
-            <v-card-actions>
-                <v-btn @click="stopGame"></v-btn>
-            </v-card-actions>
+<!--            <v-card-actions>-->
+<!--                <v-btn @click="stopGame"></v-btn>-->
+<!--            </v-card-actions>-->
         </v-card>
     </div>
 </template>
