@@ -90,6 +90,7 @@ export default new Vuex.Store({
                 test: state.testResults,
                 learn: state.learnResults,
                 model: state.modelStats,
+                propagationSubsetId: state.propagationSubsetId,
             }));
             console.log(state, 'd');
         },
