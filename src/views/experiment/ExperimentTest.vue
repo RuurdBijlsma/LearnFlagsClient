@@ -39,9 +39,9 @@
             <v-card-text>
                 <p>{{ factIndex }} / {{ $store.state.factCount }} flags encountered</p>
             </v-card-text>
-<!--            <v-card-actions>-->
-<!--                <v-btn @click="stopGame"></v-btn>-->
-<!--            </v-card-actions>-->
+            <!--            <v-card-actions>-->
+            <!--                <v-btn @click="stopGame"></v-btn>-->
+            <!--            </v-card-actions>-->
         </v-card>
     </div>
 </template>
@@ -77,7 +77,9 @@ export default Vue.extend({
     },
     methods: {
         async newGame() {
-            this.flagList = await this.$store.dispatch('getSubsetFlags', this.subsetId);
+            let flagList: { question: string, answer: string }[] =
+                await this.$store.dispatch('getSubsetFlags', this.subsetId);
+            this.flagList = this.shuffle(flagList)
             console.log("flaglist result:", this.flagList);
             this.game.startTime = performance.now();
             this.nextFact();
@@ -146,6 +148,23 @@ export default Vue.extend({
         },
         toHms(s: number) {
             return secondsToHms(s);
+        },
+        shuffle<T>(array: T[]): T[] {
+            let currentIndex = array.length, randomIndex;
+
+            // While there remain elements to shuffle...
+            while (currentIndex != 0) {
+
+                // Pick a remaining element...
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+
+                // And swap it with the current element.
+                [array[currentIndex], array[randomIndex]] = [
+                    array[randomIndex], array[currentIndex]];
+            }
+
+            return array;
         },
     },
     computed: {
