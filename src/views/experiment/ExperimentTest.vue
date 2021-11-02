@@ -77,9 +77,7 @@ export default Vue.extend({
     },
     methods: {
         async newGame() {
-            let flagList: { question: string, answer: string }[] =
-                await this.$store.dispatch('getSubsetFlags', this.subsetId);
-            this.flagList = this.shuffle(flagList)
+            this.flagList = await this.$store.dispatch('getSubsetFlags', this.subsetId);
             console.log("flaglist result:", this.flagList);
             this.game.startTime = performance.now();
             this.nextFact();
